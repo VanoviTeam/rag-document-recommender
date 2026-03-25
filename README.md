@@ -1,7 +1,7 @@
 # 🧠 Sistema automatizado de recomendaciones con IA basado en Documentos (RAG) - [Local Demo]
 
 ## 📌 Descripción General del Proyecto
-Este proyecto es una versión de demostración **local** de un sistema de recomendaciones basado en documentos. Utiliza técnicas avanzadas de **RAG (Retrieval-Augmented Generation)** para buscar información en una base de datos vectorial y generar recomendaciones basadas estrictamente en los documentos alojados. Todo esto está orquestado mediante flujos de trabajo automatizados en n8n e integrado de manera modular.
+Este proyecto es una versión de demostración **local** de un sistema de recomendaciones con IA basado en documentos. Utiliza técnicas avanzadas de **RAG (Retrieval-Augmented Generation)** para buscar información en una base de datos vectorial y generar recomendaciones basadas estrictamente en los documentos alojados. Todo esto está orquestado mediante flujos de trabajo automatizados en n8n e integrado de manera modular.
 
 Esta versión está adaptada para ejecutarse fácilmente en cualquier máquina local mediante contenedores, garantizando privacidad y seguridad (Self-hosted AI) al mantener todo el procesamiento lógico y de IA *on-premise*, sin depender de APIs de pago externas.
 

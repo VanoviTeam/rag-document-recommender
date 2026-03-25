@@ -1,0 +1,15 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Caddyfile — Vanovi ChatBot Project [Local Demo Version]
+# ──────────────────────────────────────────────────────────────────────────────
+# Este archivo es una versión simplificada para la demo en local.
+# Puesto que las ramas de desarrollo son para pruebas locales, hemos 
+# retirado la capa compleja de Authentik (Identity Provider) que 
+# requiere nombres de dominio enrutables reales.
+#
+# Simplemente mapea el tráfico HTTP del puerto 80 hacia n8n internamente.
+# ──────────────────────────────────────────────────────────────────────────────
+
+:80 {
+    # Redirigir el tráfico del puerto 80 directo hacia n8n puerto 5678
+    reverse_proxy n8n:5678
+}
