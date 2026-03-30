@@ -1,15 +1,15 @@
 # ──────────────────────────────────────────────────────────────────────────────
 # Caddyfile — Vanovi rag-document-recommender Project [Local Demo]
 # ──────────────────────────────────────────────────────────────────────────────
-# Este archivo es una versión simplificada para la demo en local.
-# Puesto que las ramas de desarrollo son para pruebas locales, hemos 
-# retirado la capa compleja de Authentik (Identity Provider) que 
-# requiere nombres de dominio enrutables reales.
+# This file is a simplified version for local demo purposes.
+# Since development branches are for local testing, we have
+# removed the complex Authentik (Identity Provider) layer that
+# requires actual routable domain names.
 #
-# Simplemente mapea el tráfico HTTP del puerto 80 hacia n8n internamente.
+# It simply maps HTTP traffic from port 80 to n8n internally.
 # ──────────────────────────────────────────────────────────────────────────────
 
 :80 {
-    # Redirigir el tráfico del puerto 80 directo hacia n8n puerto 5678
+    # Redirect traffic from port 80 directly to n8n port 5678
     reverse_proxy n8n:5678
 }

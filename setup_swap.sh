@@ -1,20 +1,20 @@
 #!/bin/bash
-# Script para configurar 8GB de Swap en Ubuntu (OCI Ampere A1)
-# Requiere permisos de root (sudo)
+# Script to configure 8GB of Swap in Ubuntu (OCI Ampere A1)
+# Requires root privileges (sudo)
 
 if [ "$EUID" -ne 0 ]; then
-  echo "Por favor, ejecuta este script con sudo:"
+  echo "Please, run this script with sudo:"
   echo "sudo ./setup_swap.sh"
   exit
 fi
 
-echo "Configurando 8GB de archivo Swap..."
+echo "Configuring 8GB of Swap file..."
 
-# Crear el archivo si no existe
+# Create the file if it doesn't exist
 if grep -q "swapfile" /etc/fstab; then
-    echo "¡El swap ya está configurado en /etc/fstab!"
+    echo "Swap is already configured in /etc/fstab!"
 else
-    # Fallocate a veces da problemas en ciertos sistemas de archivos de OCI, dd es más seguro aunque más lento.
+    # Fallocate sometimes causes issues on certain OCI filesystems, dd is safer although slower.
     # fallocate -l 8G /swapfile
     dd if=/dev/zero of=/swapfile bs=1M count=8192 status=progress
     
@@ -22,15 +22,15 @@ else
     mkswap /swapfile
     swapon /swapfile
 
-    # Hacerlo persistente tras reiniciar
+    # Make it persistent after reboot
     echo '/swapfile none swap sw 0 0' >> /etc/fstab
     
-    # Ajustar vm.swappiness
+    # Adjust vm.swappiness
     echo "vm.swappiness=10" >> /etc/sysctl.conf
     sysctl -p
     
-    echo "Swap configurado correctamente."
+    echo "Swap successfully configured."
 fi
 
-echo "Memoria actual:"
+echo "Current memory:"
 free -h

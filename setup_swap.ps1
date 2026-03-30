@@ -1,26 +1,26 @@
 <#
 .SYNOPSIS
-Aumenta la Memoria Virtual (Swap) para el subsistema de Windows para Linux (WSL2) y nativo en Windows.
-Ideal antes de arrancar Docker Desktop de cara a correr modelos LLM con Ollama.
+Increases Virtual Memory (Swap) for the Windows Subsystem for Linux (WSL2) natively on Windows.
+Ideal before starting Docker Desktop for running LLM models with Ollama.
 #>
 
-Write-Host "Configurando memoria y swap para Docker Desktop (WSL2) en Windows..." -ForegroundColor Cyan
+Write-Host "Configuring memory and swap for Docker Desktop (WSL2) on Windows..." -ForegroundColor Cyan
 
 $wslConfigPath = "$env:USERPROFILE\.wslconfig"
 $configContent = @"
 [wsl2]
-# Asigna límites de RAM al subsistema WSL2. 
-# Importante no asfixiar el lado de Windows.
+# Assign RAM limits to the WSL2 subsystem. 
+# Important not to choke the Windows side.
 memory=8GB
-# Crea 8GB de Swap (Memoria Virtual) en el disco para evitar cuelgues del modelo AI
+# Create 8GB of Swap (Virtual Memory) on disk to prevent AI model crashes
 swap=8GB
 "@
 
 Out-File -FilePath $wslConfigPath -InputObject $configContent -Encoding UTF8 -Force
-Write-Host "Archivo WSL configurado automáticamente en: $wslConfigPath" -ForegroundColor Green
-Write-Host "Apagando el subsistema de WSL para aplicar los cambios..." -ForegroundColor Yellow
+Write-Host "WSL file automatically configured at: $wslConfigPath" -ForegroundColor Green
+Write-Host "Shutting down the WSL subsystem to apply changes..." -ForegroundColor Yellow
 wsl --shutdown
 
 Write-Host ""
-Write-Host "¡Completado! Al abrir Docker Desktop de nuevo, los contenedores arrancarán con este espacio swap garantizado." -ForegroundColor Green
+Write-Host "Done! When you open Docker Desktop again, the containers will boot with this guaranteed swap space." -ForegroundColor Green
 Pause

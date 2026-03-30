@@ -68,12 +68,12 @@ services:
     command:
       - "-c"
       - |
-        echo "Iniciando importacion de credenciales..."
+        echo "Starting credentials import..."
         n8n import:credentials --input=/demo-data/credentials/ollama_credential.json || true
         n8n import:credentials --input=/demo-data/credentials/qdrant_credential.json || true
-        echo "Iniciando importacion de workflows..."
+        echo "Starting workflows import..."
         n8n import:workflow --separate --input=/demo-data/workflows || true
-        echo "Importacion completada con exito."
+        echo "Import successfully completed."
     volumes:
       - ./n8n/demo-data:/demo-data
     depends_on:
@@ -119,11 +119,11 @@ services:
       - ollama_storage:/root/.ollama
     entrypoint: /bin/sh
     environment:
-      # Apuntamos exactamente al nombre de tu servicio principal
+      # Point exactly to the main service name
       - OLLAMA_HOST=ollama-cpu:11434
     command:
       - "-c"
-      # Añadimos un modelo de embeddings muy ligero y excelente para RAG
+      # Add a very lightweight and excellent embedding model for RAG
       - "sleep 5; ollama pull llama3.2:latest && ollama pull nomic-embed-text-v2-moe"
     depends_on:
       - ollama-cpu
