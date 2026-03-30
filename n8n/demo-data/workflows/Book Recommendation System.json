@@ -1,0 +1,564 @@
+{
+  "name": "Book Recommendation Bot-GithubVersion",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Literary genre: {{ $json['literary genre'] }}\nBooks read: {{ $json['Readed Books'] }}\nWhich publisher the book should be from: {{ $json.Editorial }}\nApproximate number of pages in the book: {{ $json['How many pages?'] }}",
+        "options": {
+          "systemMessage": "You are BookBot, an expert and highly enthusiastic literary advisor. Your mission is to analyze the user's preferences provided in the form and recommend their next great read, spreading your love for books.\n\n⚠️ UNBREAKABLE GOLDEN RULE:\nYour recommendations MUST come SOLELY AND EXCLUSIVELY from the books found through your connected search tool (Qdrant Vector Store). It is STRICTLY FORBIDDEN to use your general knowledge to recommend books that are not in the database. If a book is not returned by the tool, IT DOES NOT EXIST to you.\n\nSTRICTLY FOLLOW THIS FLOW:\n\nPHASE 1 — SEARCH AND ANALYSIS:\n\nCarefully read the data collected in the form (favorite genres, preferred length, what they want to avoid, etc...).\n\nYou MUST USE your database search tool to find books that fit these preferences.\n\nPHASE 2 — INTRODUCTION AND RECOMMENDATIONS:\nWrite a brief, very warm introduction, celebrating their taste for reading and their initiative to look for new books.\nThen, based ONLY on the results obtained by your tool, generate EXACTLY 3 recommendations in this strict format:\n\n📚 [Title] — [Author]\nWhy will you love it? [2-3 highly persuasive and enthusiastic sentences connecting the book's plot with the user's specific profile]\nGenre: [genre] | Approx. pages: [number]\nSynopsis: [1-2 intriguing sentences that catch their attention but without spoilers]\n\n(Note: If the database returns fewer than 3 useful books, recommend only the ones that exist and kindly tell them that this is what closest matches their tastes in the current catalog).\n\nSay a friendly goodbye, encouraging them to dive into these adventures.\n\nGLOBAL RULES:\n\nALWAYS write in English.\n\nMaintain a professional yet very approachable and motivating tone. We want the user to feel \"Wow, I have to read this!\".\n\nDO NOT INVENT BOOKS. Only recommend what is in the Qdrant catalog."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -672,
+        -960
+      ],
+      "id": "e3b2f938-0d43-4b29-901f-72b2dc8201a6",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Tool to search the Qdrant database for books based on user preferences. You MUST provide the search query in a JSON object with a single key named \"input\". Example: {\"input\": \"science fiction novel\"}",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "recomendation_rag_Local_Demo",
+          "mode": "list",
+          "cachedResultName": "recomendation_rag_Local_Demo"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        -576,
+        -736
+      ],
+      "id": "68f300d8-c780-40ad-bede-f9c262ed674d",
+      "name": "Qdrant Vector Store",
+      "credentials": {
+        "qdrantApi": {
+          "id": "1C9KI5qRNORmhp5u",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text-v2-moe:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        -560
+      ],
+      "id": "ba6c6380-e937-4d1c-9403-4ea11c050e82",
+      "name": "Embeddings Ollama",
+      "credentials": {
+        "ollamaApi": {
+          "id": "NkK4wJOqIPsgZJzN",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Get the AI response and the email directly from the input data (from the form)\nconst aiOutput = $input.first().json.output || '';\n// Here we grab the email (Adjust this if your form field has another name)\nlet email =  $('Book Recomendation Form').first().json['What is your email address?'] || \"default_email@example.com\";\n\nlet name = \"reader\";\n\n// 2. Extract the name from the text before the '@' in the email\nif (email && email.includes('@') && email !== \"default_email@example.com\") {\n  let extractedName = email.split('@')[0];\n  // Optional: Capitalize the first letter so it looks better in the email (e.g., \"john\" -> \"John\")\n  name = extractedName.charAt(0).toUpperCase() + extractedName.slice(1);\n}\n\n// 3. The main text to process is simply the AI output (no need to clean hidden JSONs anymore)\nlet mainText = aiOutput.trim();\n\n// 4. Format the Markdown text into elegant HTML\nlet htmlContent = mainText\n  // Title of each book (📚 **Title - Author**)\n  .replace(/📚 \\*\\*(.+?)\\*\\*/g, '<h3 style=\"color:#2c3e50; margin-top: 28px; margin-bottom: 8px; font-size: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px;\">📚 $1</h3>')\n  \n  // Convert custom bold text into nice subtitles\n  .replace(/\\*([^\\*:]+):\\*/g, '<strong style=\"color:#d97706;\">$1:</strong>')\n  .replace(/\\*\\*(.+?)\\*\\*/g, '<strong style=\"color:#1e293b;\">$1</strong>')\n  \n  // Italics (Emphasis)\n  .replace(/\\*(.+?)\\*/g, '<em style=\"color:#475569;\">$1</em>')\n  \n  // Double line breaks converted into paragraphs\n  .split('\\n\\n')\n  .map(p => {\n    let text = p.trim();\n    return text ? `<p style=\"line-height: 1.6; color: #4a5568; margin-bottom: 12px;\">${text.replace(/\\n/g, '<br>')}</p>` : '';\n  })\n  .join('\\n');\n\n// 5. Professional Email Template (Responsive and modern)\nconst htmlBody = `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Your Literary Recommendations</title>\n</head>\n<body style=\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 0; -webkit-font-smoothing: antialiased;\">\n  <div style=\"max-width: 600px; margin: 30px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);\">\n    \n    <div style=\"background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 40px 30px; text-align: center;\">\n      <h1 style=\"color: #ffffff; font-size: 26px; margin: 0; font-weight: 700;\">Your Next Reads 📖</h1>\n      <p style=\"color: #94a3b8; font-size: 16px; margin: 12px 0 0 0; font-style: italic;\">An exclusive selection for you, ${name}</p>\n    </div>\n    \n    <div style=\"padding: 30px 40px; background-color: #ffffff;\">\n      ${htmlContent}\n      \n      <div style=\"margin-top: 40px; text-align: center;\">\n        <a href=\"https://vanovi.design\" style=\"display: inline-block; background-color: #3b82f6; color: #ffffff; font-weight: 600; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-size: 15px;\">Explore more on Vanovi</a>\n      </div>\n    </div>\n    \n    <div style=\"background-color: #f1f5f9; padding: 24px 30px; text-align: center; border-top: 1px solid #e2e8f0;\">\n      <p style=\"margin: 0; color: #64748b; font-size: 14px;\">Generated with ❤️ by BookBot</p>\n      <p style=\"margin: 6px 0 0 0; color: #94a3b8; font-size: 12px;\">We hope you immensely enjoy your next literary adventure.</p>\n    </div>\n    \n  </div>\n</body>\n</html>`;\n\n// 6. Pass to the Send Email node\nreturn [{\n  json: {\n    to: email, \n    subject: `Your next great literary adventure awaits, ${name} 📚`,\n    html: htmlBody\n  }\n}];"
+      },
+      "id": "f11e3d0c-4b29-461d-884d-7522dd8e8151",
+      "name": "Format Email HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        -960
+      ]
+    },
+    {
+      "parameters": {
+        "model": "llama3.2:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -768,
+        -736
+      ],
+      "id": "63c2cb3f-60fb-49f6-bff9-59c3d9a45f51",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "NkK4wJOqIPsgZJzN",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -1328,
+        -768
+      ],
+      "id": "b207b53d-849f-45f6-aa9e-9e7ffaf5357f",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 800,
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        -1248,
+        -560
+      ],
+      "id": "40ea56e4-2f49-487a-a06f-de302a3de6dd",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "recomendation_rag_Local_Demo",
+          "mode": "id"
+        },
+        "embeddingBatchSize": 10,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        -1424,
+        -992
+      ],
+      "id": "03ca6049-e114-4b65-ae21-3333c0addb53",
+      "name": "Qdrant Vector Store1",
+      "credentials": {
+        "qdrantApi": {
+          "id": "1C9KI5qRNORmhp5u",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text-v2-moe:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        -1472,
+        -768
+      ],
+      "id": "d40a67cf-f1da-4991-afec-8980c6bd0d51",
+      "name": "Embeddings Ollama1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "NkK4wJOqIPsgZJzN",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toEmail": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -80,
+        -960
+      ],
+      "id": "849d3a63-8b55-4cbb-b105-9db43da98015",
+      "name": "Send an Email",
+      "webhookId": "46b99b71-2008-4b44-990f-d112f73c857e"
+    },
+    {
+      "parameters": {
+        "formTitle": "Recommendation Form for Our Books",
+        "formDescription": "Hello, welcome to our form ",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "literary genre",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Fantasia"
+                  },
+                  {
+                    "option": "Magical Realism"
+                  },
+                  {
+                    "option": "Literary Fiction"
+                  },
+                  {
+                    "option": "Dystopian Fiction"
+                  },
+                  {
+                    "option": "Political Fiction"
+                  },
+                  {
+                    "option": "Science Fiction"
+                  },
+                  {
+                    "option": "Philosophical Fiction"
+                  },
+                  {
+                    "option": "Children's Literature"
+                  },
+                  {
+                    "option": "Fable"
+                  },
+                  {
+                    "option": "Crime Fiction"
+                  },
+                  {
+                    "option": "Detective Novel"
+                  },
+                  {
+                    "option": "Mystery"
+                  },
+                  {
+                    "option": "Non-Fiction"
+                  },
+                  {
+                    "option": "Popular History"
+                  },
+                  {
+                    "option": "Anthropology"
+                  },
+                  {
+                    "option": "Gothic Horror"
+                  },
+                  {
+                    "option": "Epistolary Novel"
+                  },
+                  {
+                    "option": "Romance"
+                  },
+                  {
+                    "option": "Social Commentary"
+                  },
+                  {
+                    "option": "Realism"
+                  },
+                  {
+                    "option": "Philosophy"
+                  },
+                  {
+                    "option": "Self-Help"
+                  },
+                  {
+                    "option": "Essay"
+                  },
+                  {
+                    "option": "Horror"
+                  },
+                  {
+                    "option": "Psychological Thriller"
+                  },
+                  {
+                    "option": "Autobiographical Graphic Novel"
+                  },
+                  {
+                    "option": "Historical Fiction"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Readed Books",
+              "defaultValue": "none"
+            },
+            {
+              "fieldLabel": "Editorial",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Editorial Sudamericana"
+                  },
+                  {
+                    "option": "HarperCollins"
+                  },
+                  {
+                    "option": "Secker & Warburg"
+                  },
+                  {
+                    "option": "Penguin Books"
+                  },
+                  {
+                    "option": "Signet Classics"
+                  },
+                  {
+                    "option": "Reynal & Hitchcock"
+                  },
+                  {
+                    "option": "Gallimard"
+                  },
+                  {
+                    "option": "Harvest Books"
+                  },
+                  {
+                    "option": "Collins Crime Club"
+                  },
+                  {
+                    "option": "Berkley Books"
+                  },
+                  {
+                    "option": "Harper"
+                  },
+                  {
+                    "option": "Penguin Random House"
+                  },
+                  {
+                    "option": "Archibald Constable and Company"
+                  },
+                  {
+                    "option": "Penguin Classics"
+                  },
+                  {
+                    "option": "T. Egerton"
+                  },
+                  {
+                    "option": "Modern Library"
+                  },
+                  {
+                    "option": "Doubleday"
+                  },
+                  {
+                    "option": "Anchor"
+                  },
+                  {
+                    "option": "Hodder & Stoughton"
+                  },
+                  {
+                    "option": "L'Association"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "How many pages?",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Approx. 200 pages"
+                  },
+                  {
+                    "option": "Approx. 300 pages"
+                  },
+                  {
+                    "option": "Approx. 400 pages"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "What is your email address?",
+              "fieldType": "email",
+              "defaultValue": "eduardhorvat9181@gmail.com",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -912,
+        -960
+      ],
+      "id": "270e55bd-7cf9-484c-947f-8314c464440f",
+      "name": "Book Recomendation Form",
+      "webhookId": "03fb7ed0-de8f-4209-ace5-8bc8b6280597"
+    },
+    {
+      "parameters": {
+        "formTitle": "Uploader Files",
+        "formDescription": "This form is for aupload files for the RAG.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Upload the file here.",
+              "fieldType": "file"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -1648,
+        -880
+      ],
+      "id": "f29bbaee-1b81-4163-95ab-6859fe9a3bd3",
+      "name": "Information Upload Form",
+      "webhookId": "72a855a0-72b2-4d29-bfce-162f4ba0d03d"
+    },
+    {
+      "parameters": {
+        "content": "**Important!**\nFor the workflow to work, you must create credentials for the email account you want to use.\n\nHere are some tutorials and documentation that you may find helpful:\n\n* [For Gmail accounts. (min 3:17)](https://www.youtube.com/watch?v=3Ai1EPznlAc)\n* [For Outlook accounts](https://www.youtube.com/watch?v=B68JlIohcOs)\n\nYou can also check out the official n8n documentation.\n* [n8n credentials documentation](https://docs.n8n.io/credentials/)",
+        "height": 432,
+        "width": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -112,
+        -1248
+      ],
+      "typeVersion": 1,
+      "id": "ea3f52c7-869e-4ad4-aace-946812c586ba",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Qdrant Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Format Email HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Email HTML": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store1",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Book Recomendation Form": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Upload Form": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "04aaacab-124a-47c3-8244-322939510152",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "75d28b72386c596a2e7093be39416668f4e7534950dfbd004fdcd8c859474e56"
+  },
+  "id": "CrTvkxM4NpQiFire",
+  "tags": []
+}

@@ -1,6 +1,7 @@
 networks:
   demo:
 
+
 volumes:
   n8n_storage:
   postgres_storage:
@@ -8,12 +9,14 @@ volumes:
   caddy_data:
   caddy_config:
 
+
 x-n8n: &service-n8n
   image: n8nio/n8n:latest
-  networks: ['demo']
+  networks: [ 'demo' ]
   environment:
     - DB_TYPE=postgresdb
     - DB_POSTGRESDB_HOST=postgres
+    - DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
     - DB_POSTGRESDB_USER=${POSTGRES_USER}
     - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
     - N8N_DIAGNOSTICS_ENABLED=false
@@ -29,7 +32,7 @@ x-n8n: &service-n8n
 x-ollama: &service-ollama
   image: ollama/ollama:latest
   container_name: ollama
-  networks: ['demo']
+  networks: [ 'demo' ]
   restart: unless-stopped
   ports:
     - "11434:11434"
@@ -43,7 +46,7 @@ services:
   postgres:
     image: postgres:16-alpine
     hostname: postgres
-    networks: ['demo']
+    networks: [ 'demo' ]
     restart: unless-stopped
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
@@ -52,7 +55,7 @@ services:
     volumes:
       - postgres_storage:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -h localhost -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      test: [ 'CMD-SHELL', 'pg_isready -h localhost -U $${POSTGRES_USER} -d $${POSTGRES_DB}' ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -63,14 +66,14 @@ services:
     container_name: n8n-import
     entrypoint: /bin/sh
     command:
-    - "-c"
-    - |
-      if [ -z "$$(n8n list:workflow --onlyId)" ]; then
-        n8n import:credentials --separate --input=/demo-data/credentials && \
-        n8n import:workflow --separate --input=/demo-data/workflows
-      else
-        echo "Workflows exist, skipping import"
-      fi
+      - "-c"
+      - |
+        echo "Iniciando importacion de credenciales..."
+        n8n import:credentials --input=/demo-data/credentials/ollama_credential.json || true
+        n8n import:credentials --input=/demo-data/credentials/qdrant_credential.json || true
+        echo "Iniciando importacion de workflows..."
+        n8n import:workflow --separate --input=/demo-data/workflows || true
+        echo "Importacion completada con exito."
     volumes:
       - ./n8n/demo-data:/demo-data
     depends_on:
@@ -98,7 +101,7 @@ services:
     image: qdrant/qdrant
     hostname: qdrant
     container_name: qdrant
-    networks: ['demo']
+    networks: [ 'demo' ]
     restart: unless-stopped
     ports:
       - "6333:6333"
@@ -110,16 +113,18 @@ services:
 
   ollama-pull-llama:
     image: ollama/ollama:latest
-    networks: ['demo']
+    networks: [ 'demo' ]
     container_name: ollama-pull-llama
     volumes:
       - ollama_storage:/root/.ollama
     entrypoint: /bin/sh
     environment:
-      - OLLAMA_HOST=ollama:11434
+      # Apuntamos exactamente al nombre de tu servicio principal
+      - OLLAMA_HOST=ollama-cpu:11434
     command:
       - "-c"
-      - "sleep 3; ollama pull llama3.2"
+      # Añadimos un modelo de embeddings muy ligero y excelente para RAG
+      - "sleep 5; ollama pull llama3.2:latest && ollama pull nomic-embed-text-v2-moe"
     depends_on:
       - ollama-cpu
 
@@ -127,7 +132,7 @@ services:
     image: caddy:2-alpine
     container_name: caddy-proxy
     restart: unless-stopped
-    networks: ['demo']
+    networks: [ 'demo' ]
     ports:
       - "80:80"
     volumes:
