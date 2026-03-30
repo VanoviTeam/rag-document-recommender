@@ -1,0 +1,15 @@
+# Archivos de entorno y secretos
+.env
+.env.*
+!.env.example
+
+# Almacenamiento local de bases de datos
+# Evita subir los embeddings y datos vectoriales guardados en local al probar la demo
+qdrant/storage/
+
+# Herramientas y scripts locales
+tools/
+
+# Ficheros del Sistema Operativo
+.DS_Store
+Thumbs.db
