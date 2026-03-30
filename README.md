@@ -1,87 +1,105 @@
-# 🧠 Sistema automatizado de recomendaciones con IA basado en Documentos (RAG) - [Local Demo]
+# 🧠 Automated Document-Based AI Recommendation System (RAG) - [Local Demo]
 
-## 📌 Descripción General del Proyecto
-Este proyecto es una versión de demostración **local** de un sistema de recomendaciones con IA basado en documentos. Utiliza técnicas avanzadas de **RAG (Retrieval-Augmented Generation)** para buscar información en una base de datos vectorial y generar recomendaciones basadas estrictamente en los documentos alojados. Todo esto está orquestado mediante flujos de trabajo automatizados en n8n e integrado de manera modular y escalable mediante Docker.
+## 📌 Project Overview
+This project is a **local** demonstration version of a document-based AI recommendation system. It uses advanced **RAG (Retrieval-Augmented Generation)** techniques to search for information in a vector database and generate recommendations strictly based on the hosted documents. All of this is orchestrated through automated workflows in n8n and integrated in a modular and scalable way using Docker.
 
-Esta versión está adaptada para ejecutarse fácilmente en cualquier máquina local mediante contenedores, garantizando privacidad y seguridad (Self-hosted AI) al mantener todo el procesamiento lógico y de IA *on-premise*, sin depender de APIs de pago externas.
-
----
-
-## ⚙️ Requisitos Previos
-
-### Requisitos de Hardware
-- **Memoria RAM:** Mínimo 16 GB (recomendado 32 GB o más) debido a la ejecución local de modelos LLM.
-- **Almacenamiento:** Al menos 20 GB de espacio libre para las imágenes de Docker, la base de datos vectorial y los modelos de IA.
-- **CPU/GPU:** El proyecto viene configurado y optimizado por defecto para ejecutarse en **CPU pura**, lo que permite un despliegue universal garantizado (ideal para hardware tradicional o instancias gratuitas de Cloud sin gráficas). Si dispones de una tarjeta gráfica nativa y deseas aprovecharla para acelerar el LLM, deberás [modificar el passthrough de la GPU en el `docker-compose.yml`](https://docs.docker.com/compose/gpu-support/) según la documentación oficial de Docker.
-
-### Requisitos de Software
-- **Docker** y **Docker Compose** instalados en el sistema.
-- **Git** (para clonar el repositorio).
-- (Opcional) SO basado en Linux/WSL2 si se van a administrar recursos como el memory swap.
+This version is adapted to run easily on any local machine using containers, guaranteeing privacy and security (Self-hosted AI) by keeping all logic and AI processing *on-premise*, without relying on paid external APIs.
 
 ---
 
-## 🛠 Arquitectura y Stack Tecnológico
-- **Automatización y Orquestación:** n8n (Motor principal de workflows).
-- **Inteligencia Artificial y NLP:** Modelos locales ejecutados con **Ollama** (Llama 3.2, nomic-embed-text-v2-moe).
-- **Base de Datos Vectorial:** Qdrant (Almacenamiento y búsqueda semántica de documentos).
-- **Bases de Datos Relacionales y Caché:** PostgreSQL, Redis.
-- **Infraestructura de Contenedores:** Docker y Docker Compose.
-- **Caddy Server:** Proxy Inverso.
+## ⚙️ Prerequisites
+
+### Hardware Requirements
+- **RAM:** Minimum 16 GB (recommended 32 GB or more) due to local execution of LLM models.
+- **Storage:** At least 20 GB of free space for Docker images, the vector database, and AI models.
+- **CPU/GPU:** The project is configured and optimized by default to run on **pure CPU**, allowing guaranteed universal deployment (ideal for traditional hardware or free Cloud instances without dedicated graphics). If you have a native graphics card and wish to use it to accelerate the LLM, you must [change the GPU passthrough in `docker-compose.yml`](https://docs.docker.com/compose/gpu-support/) according to Docker's official documentation.
+
+### Software Requirements
+- **Docker** and **Docker Compose** installed on your system.
+- **Git** (to clone the repository).
+- (Optional) Linux/WSL2-based OS if you need to manage resources like memory swap.
 
 ---
 
-## ☁️ Testeado y Desplegado en Oracle Cloud (OCI)
-Aunque esta es una versión adaptada para demostración local, toda la arquitectura original ha sido **probada y validada exitosamente en una máquina virtual de Oracle OCI** (con un enfoque especial en aprovechar el "Always Free" tier con instancias ARM Ampere A1, asignando hasta 24GB de RAM).
+## 🛠 Architecture & Tech Stack
+- **Automation and Orchestration:** n8n (Main workflow engine).
+- **Artificial Intelligence & NLP:** Local models executed using **Ollama** (Llama 3.2, nomic-embed-text-v2-moe).
+- **Vector Database:** Qdrant (Storage and semantic search for documents).
+- **Relational Databases & Cache:** PostgreSQL, Redis.
+- **Container Infrastructure:** Docker and Docker Compose.
+- **Caddy Server:** Reverse Proxy.
 
 ---
 
-## 🚀 Instalación y Despliegue Local
+## ☁️ Tested Environments
 
-1. **Clonar el repositorio:**
+Although this is an adapted version for a local demonstration, the entire architecture has been **successfully tested and validated** on the following environments:
+
+### 1. Oracle Cloud (OCI)
+Tested on an Oracle OCI virtual machine, with a special focus on leveraging the "Always Free" tier with ARM Ampere A1 instances, allocating up to 24GB of RAM.
+
+### 2. Local Windows Machine (Modest Hardware)
+This demonstrates the project's ability to run locally using purely CPU configuration and swap memory:
+- **Device Name:** DESKTOP-M0UC1DL
+- **Processor:** Intel(R) Core(TM) i5-6300U CPU @ 2.40GHz 2.50 GHz
+- **Installed RAM:** 20.0 GB (19.9 GB usable)
+- **Storage:** 238 GB SSD SAMSUNG MZVLB256HAHQ-000L7
+- **Graphics Card:** Intel(R) HD Graphics 520 (128 MB)
+- **System Type:** 64-bit operating system, x64-based processor
+- **Pen and Touch:** No pen or touch input is available for this display
+
+---
+
+## 🚀 Local Installation and Deployment
+
+1. **Clone the repository:**
    ```bash
-   git clone https://github.com/tu-usuario/tu-repositorio.git
-   cd tu-repositorio
+   git clone https://github.com/your-username/your-repository.git
+   cd your-repository
    ```
 
-2. **Configuración inicial:**
-   - Copia el archivo de ejemplo de variables de entorno y ajústalo según tus necesidades predeterminadas:
+2. **Initial setup:**
+   - Copy the environment variables example file and adjust it to your default needs:
    ```bash
    cp .env.example .env
    ```
-   - *(Opcional para Linux)* Si te encuentras en un entorno Linux con poca memoria RAM o si vas a levantar el proyecto en un VPS limitado, puedes ejecutar el script de swap adjunto para **añadir 8GB de Swap** y asegurar la estabilidad del modelo LLM. Este paso **no es necesario** si tu máquina local tiene memoria de sobra (16GB+).
+   - *(Optional for Linux)* If you are on a Linux environment with low RAM or running the project on a limited VPS, you can run the provided swap script to **add 8GB of Swap** and ensure the stability of the LLM model. This step is **not necessary** if your local machine has plenty of memory (16GB+).
    ```bash
    chmod +x setup_swap.sh
    sudo ./setup_swap.sh
    ```
-   - *(Opcional para Windows)* Si usas Windows y Docker Desktop (basado en WSL2) con RAM limitada, puedes ejecutar el script específico en PowerShell para **asignar 8GB de Swap** automáticamente al subsistema Docker y evitar que Ollama crashee:
+   - *(Optional for Windows)* If you use Windows and Docker Desktop (based on WSL2) with limited RAM, you can run the specific PowerShell script to automatically **allocate 8GB of Swap** to the Docker subsystem and prevent Ollama from crashing:
    ```powershell
    .\setup_swap.ps1
    ```
 
-3. **Levantar la infraestructura:**
-   Inicia todos los servicios con Docker Compose. La primera vez tomará algo de tiempo mientras se descargan las imágenes y los modelos de Ollama.
+3. **Start the infrastructure (and automatically download AI Models):**
+   Start all services using Docker Compose. The first time will take some time while the images are downloaded. **Default Configuration**: This demo is configured so the containers automatically download the local AI models (**`llama3.2:latest`** for text and **`nomic-embed-text-v2-moe`** for embeddings). 
+   
+   *Note: If you do not wish to download these AIs or prefer using others, you must modify or remove the `ollama-pull-llm` and `ollama-pull-embedding` services in the `docker-compose.yml` file accordingly.*
    ```bash
    docker-compose up -d
    ```
 
 ---
 
-## 💻 Cómo Usar esta Demo
+## 💻 How to Use this Demo
 
-1. **Acceder a n8n:**
-   Abre tu navegador y dirígete a `http://localhost:5678` (o el puerto que hayas configurado). Sigue las instrucciones de n8n para crear tu cuenta local inicial.
-2. **Revisar Credenciales y Conexiones:**
-   Asegúrate de que n8n esté conectado correctamente a tus contenedores de Qdrant y Ollama.
-3. **Pipeline de Ingesta:**
-   Activa y ejecuta el workflow encargado de procesar y vectorizar tus archivos PDF hacia Qdrant.
-4. **Interactuar con el Agente AI:**
-   Utiliza el workflow de Formulario o consulta el Webhook de prueba de n8n para enviar mensajes y recibir las recomendaciones documentales.
+1. **Access n8n:**
+   Open your browser and navigate to `http://localhost:5678` (or the port you configured). Follow the n8n instructions to create your initial local account.
+2. **Import Demo Credentials and Workflows:**
+   In the `n8n/demo-data` folder you will find the pre-configured workflow and connection credentials for the containerized Qdrant and Ollama services used in this project. Import them into your n8n environment to have your agent ready in seconds.
+3. **Configure Email Credentials (IMPERATIVE):**
+   To successfully send out the AI recommendations via email at the end of the workflow, it is imperative that you create and configure your SMTP email credentials within n8n. Ensure these are correctly linked in the respective email sending node of your workflow.
+4. **Ingestion Pipeline (Data Upload):**
+   *Note: By default, the Qdrant RAG vector database starts completely empty.* Activate the workflow responsible for processing and vectorizing files to populate it. In the root of this project you will find the example file **`Sample Book Catalog - [Local Demo].pdf`**; this book catalog is an ideal file to upload to the RAG database and run your first tests.
+5. **Interact with the AI Agent:**
+   Use the Form workflow or hit the n8n test Webhook to receive recommendations based on the uploaded catalog.
 
 ---
 
-## 🌟 Características Destacadas
-- **Orquestación Centralizada:** Gestión coordinada de n8n, qdrant, dbs y AI (Ollama) desde un único `docker-compose.yml`.
-- **Motor RAG Ultra Rápido:** Extracción lógica de texto y búsqueda semántica con la potencia combinada de Llama 3.2 y Qdrant.
-- **Agente Dinámico:** Setup del "AI Agent" en n8n que toma decisiones autónomas sobre cuándo acceder a la base de datos documental antes de elaborar su respuesta.
-- **Entorno Privado:** Alternativa robusta *Self-hosted* al uso masivo de servicios cloud centralizados.
+## 🌟 Main Features
+- **Centralized Orchestration:** Coordinated management of n8n, qdrant, dbs, and AI (Ollama) from a single `docker-compose.yml`.
+- **Ultra Fast RAG Engine:** Logical text extraction and semantic search with the combined power of Llama 3.2 and Qdrant.
+- **Dynamic Agent:** "AI Agent" setup in n8n that makes autonomous decisions on when to access the document database before crafting its response.
+- **Private Environment:** Robust *Self-hosted* alternative to the massive use of centralized cloud services.
