@@ -101,3 +101,17 @@ This demonstrates the project's ability to run locally using purely CPU configur
 - **Ultra Fast RAG Engine:** Logical text extraction and semantic search with the combined power of Llama 3.2 and Qdrant.
 - **Dynamic Agent:** "AI Agent" setup in n8n that makes autonomous decisions on when to access the document database before crafting its response.
 - **Private Environment:** Robust *Self-hosted* alternative to the massive use of centralized cloud services.
+
+---
+
+## ⚖️ Legal & Third-Party Licenses
+
+The infrastructure code, configuration files (such as `docker-compose.yml`), automation scripts, and n8n workflow templates provided in this repository are licensed under the **MIT License**. You are free to use, modify, and distribute them as you see fit.
+
+However, please note that this project acts as an orchestrator for several third-party software components and AI models. When deploying this infrastructure, you must comply with their respective licenses:
+
+* **[n8n](https://n8n.io/):** Operates under a Sustainable Use License (Fair-code). It is free for internal use and demonstrations, but you cannot use it to offer n8n as a managed service (SaaS) to third parties.
+* **[Llama 3.2 Models (via Meta)](https://ai.meta.com/llama/license/):** The AI models downloaded automatically by this demo are subject to the Llama 3.2 Community License Agreement, which includes specific attribution requirements and commercial restrictions for large-scale deployments.
+* **Ollama, Qdrant, PostgreSQL, Redis & Caddy:** These tools are open-source and operate under their own permissive licenses (such as Apache 2.0 or MIT). 
+
+*By starting the containers and downloading the AI models, you agree to the terms and conditions of these third-party providers.*
