@@ -40,13 +40,11 @@ Tested on an Oracle OCI virtual machine, with a special focus on leveraging the 
 
 ### 2. Local Windows Machine (Modest Hardware)
 This demonstrates the project's ability to run locally using purely CPU configuration and swap memory:
-- **Device Name:** DESKTOP-M0UC1DL
 - **Processor:** Intel(R) Core(TM) i5-6300U CPU @ 2.40GHz 2.50 GHz
 - **Installed RAM:** 20.0 GB (19.9 GB usable)
-- **Storage:** 238 GB SSD SAMSUNG MZVLB256HAHQ-000L7
+- **Storage:** 238 GB SSD.
 - **Graphics Card:** Intel(R) HD Graphics 520 (128 MB)
 - **System Type:** 64-bit operating system, x64-based processor
-- **Pen and Touch:** No pen or touch input is available for this display
 
 ---
 
@@ -54,8 +52,8 @@ This demonstrates the project's ability to run locally using purely CPU configur
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/your-repository.git
-   cd your-repository
+   git clone https://github.com/VanoviTeam/rag-document-recommender.git rag-document-recomender
+   cd rag-document-recomender
    ```
 
 2. **Initial setup:**
